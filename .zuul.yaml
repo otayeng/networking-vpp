@@ -1,5 +1,5 @@
 - project:
-    name: openstack/networking-vpp
+    name: x/networking-vpp
     check:
         jobs:
 #            - networking-vpp-tempest:
@@ -17,7 +17,7 @@
         Run tempest tests for networking-vpp plugin
     parent: devstack-tempest
     required-projects:
-        - name: openstack/networking-vpp
+        - name: x/networking-vpp
     vars:
         devstack_localrc:
             VPP_BRANCH: 'stable.1804'
@@ -49,7 +49,7 @@
             etcd3: False
             q-agt: False
         devstack_plugins:
-            networking-vpp: https://git.openstack.org/openstack/networking-vpp
+            networking-vpp: https://opendev.org/x/networking-vpp
 
 - job:
     name: networking-vpp-tox-mypy2
@@ -57,7 +57,7 @@
     description: |
         Runs mypy as if for Python v2 code.
     required-projects:
-        - name: openstack/networking-vpp
+        - name: x/networking-vpp
     vars:
         tox_envlist: mypy2
 
@@ -67,6 +67,6 @@
     description: |
         Runs mypy as if for Python v3 code.
     required-projects:
-        - name: openstack/networking-vpp
+        - name: x/networking-vpp
     vars:
         tox_envlist: mypy
