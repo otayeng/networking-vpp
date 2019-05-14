@@ -423,7 +423,7 @@ For now, assume it moves packets to where they need to go, unless
 they're firewalled, in which case it doesn't. It also integrates
 properly with stock ML2 L3, DHCP and Metadata functionality.
 In the 17.01 release, we supported the ACL functionality added for VPP 17.01.
-This includes security groups, the anti-spoof filters 
+This includes security groups, the anti-spoof filters
 (including the holes for things like DHCP), the allowed address pair
 extension and the port security flag.
 
@@ -571,33 +571,30 @@ we will be increasing the coverage of the unit tests, as well as
 enhancing the types of system/integration tests that we run, e.g.
 negative testing, compatibility testing, etc.
 
-What's new in the 19.03 release?
+What's new in the 19.04 release?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In the 19.03 release, we made a few changes to add functionality:
+In the 19.04 release, we've made the below changes:
 
-- To complement the GPE overlay, there is now also a L3 solution for port
-  mirroring (OpenStack TaaS) connections.  When you're using GPE, the
-  overlay is L3 and you may have routers between your compute nodes, so
-  moving the TAP traffic around also requires an L3 overlay.  We use
-  VXLAN point to point connections to get that copy of traffic to the
-  VM destination, and these can be routed over L3.
+- We've worked on building an automated test pipeline using Tempest. We've
+  identified and fixed bugs that we discovered during our integration test
+  runs. We are currently investigating a bug, which causes a race condition
+  in the agent. We hope to have a fix for this issue soon.
 
-  We automatically use VXLAN connections when you're tapping ports on
-  GPE networks and VLAN connections for L2 networks so this should all
-  Just Work.
+- We've made it possible to overwrite the VPP repo path. VPP repo paths are
+  constructed, pointing to upstream repos, based on OS and version requested.
+  Now you can allow this to be redirected elsewhere.
 
-- We've worked on out Python 3 compatibility in preparation for the
-  EOL of Python 2.7. Both the Neutron server's driver components and the
-  agent components that control VPP should now support Python 3.5, but this
-  work is ongoing and if you do find any issues please report them
-  on the Launchpad page.
+- We've updated the mac-ip permit list to allow the link-local IPv6
+  address prefix for neighbor discovery.
 
-- We've worked on our L3 Neutron routers support and added functionality
-  that allows you to use NAT from multiple routers simultaneously -
-  ideal if, for instance, you like to use one router per tenant and in
-  more unusual cases routers with different external networks.
+- We've worked on additional fixes for Python3 compatibility and enabled py3
+  tests in gerrit gating.
+
+- We've updated the ACL calls in vpp.py to tidy-up the arguments. We've worked
+  on reordering vpp.py to group related functions, which is going
+  to be helpful for further refactoring work in the future.
 
 - We've been doing the usual round of bug fixes and updates - the code
-  will work with both VPP 18.10 and 19.01 and has been updated to
+  will work with both VPP 19.01 and 19.04 and has been updated to
   keep up with Neutron Rocky and Stein.
