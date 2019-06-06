@@ -74,6 +74,10 @@ class VppTrunkPlugin(common_db_mixin.CommonDbMixin):
         self._segmentation_types = {
             trunk_const.VLAN: plugin_utils.is_valid_vlan_tag
             }
+        # This is needed to prevent deletion of trunk's parent or sub port
+        # without first deleting the trunk itself
+        registry.subscribe(rules.enforce_port_deletion_rules,
+                           resources.PORT, events.BEFORE_DELETE)
         # Subscribe to trunk parent-port binding events
         # We use this event to trigger the etcd trunk key update.
         registry.subscribe(self._trigger_etcd_trunk_update,
