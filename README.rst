@@ -89,7 +89,7 @@ something like this::
     NR_HUGEPAGES=2500
 
     disable_service q-agt # we're not using OVS or LB
-    enable_plugin networking-vpp https://github.com/openstack/networking-vpp
+    enable_plugin networking-vpp https://opendev.org/x/networking-vpp
     Q_PLUGIN=ml2
     Q_USE_SECGROUP=True
     Q_ML2_PLUGIN_MECHANISM_DRIVERS=vpp

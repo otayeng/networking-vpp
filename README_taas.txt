@@ -6,7 +6,7 @@ is intended to be used for debugging and troubleshooting.
 
 For this purpose, networking-vpp implements a driver for the extension
 neutron/tap-as-a-service
-(https://git.openstack.org/cgit/openstack/tap-as-a-service/).
+(https://opendev.org/x/tap-as-a-service/).
 
 1. Installation
 - Install the neutron extension: openstack/tap-as-a-service
@@ -28,7 +28,7 @@ Add the following lines to the ML2 configuration on the Neutron server:
 
 2. Usage
 See the documentation of Tap as a service
-(https://git.openstack.org/cgit/openstack/tap-as-a-service/).  This
+(https://opendev.org/x/tap-as-a-service/).  This
 implements the standard service API.
 
 3. Known Limitations
