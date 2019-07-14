@@ -102,6 +102,20 @@ except ImportError:
     directory = neutron.manager.NeutronManager
     model_base = neutron.db.model_base
 
+# Staying abreast of neutron.db changes in Stein
+try:
+    # Rocky and before
+    from neutron.db import _resource_extend as resource_extend
+    from neutron.db import api as neutron_db_api
+    db_context_writer = neutron_db_api.context_manager.writer
+    db_context_reader = neutron_db_api.context_manager.reader
+except ImportError:
+    # Stein onwards
+    from neutron_lib.db import api as neutron_db_api
+    from neutron_lib.db import resource_extend
+    db_context_writer = neutron_db_api.CONTEXT_WRITER
+    db_context_reader = neutron_db_api.CONTEXT_READER
+
 try:
     # Newton
     n_const.L3

@@ -15,6 +15,7 @@
 #
 
 import copy
+from networking_vpp.compat import db_context_writer
 from networking_vpp.compat import events
 from networking_vpp.compat import n_provider as provider
 from networking_vpp.compat import portbindings
@@ -24,7 +25,6 @@ from networking_vpp import constants as nvpp_const
 from networking_vpp.db import db
 from networking_vpp.mech_vpp import EtcdAgentCommunicator
 
-from neutron.db import api as neutron_db_api
 from neutron.db import common_db_mixin
 from neutron.db import db_base_plugin_common
 
@@ -115,7 +115,7 @@ class VppTrunkPlugin(common_db_mixin.CommonDbMixin):
     def _trunk_path(self, host, port_id):
         return nvpp_const.LEADIN + "/nodes/" + host + "/trunks/" + port_id
 
-    @neutron_db_api.context_manager.writer
+    @db_context_writer
     def _write_trunk_journal(self, context, trunk_path, trunk_data):
         """Write the trunk journal to etcd."""
         LOG.info("trunk-service: writing trunk trunk interface journal for "
@@ -178,7 +178,7 @@ class VppTrunkPlugin(common_db_mixin.CommonDbMixin):
             # Trunk will turn active only after it has been bound on a host
             status=trunk_const.DOWN_STATUS,
             sub_ports=sub_ports)
-        with neutron_db_api.context_manager.writer.using(context):
+        with db_context_writer.using(context):
             trunk_obj.create()
             payload = callbacks.TrunkPayload(context, trunk_obj.id,
                                              current_trunk=trunk_obj)
@@ -268,7 +268,7 @@ class VppTrunkPlugin(common_db_mixin.CommonDbMixin):
         """Update the trunk object."""
         LOG.debug("Updating trunk %s trunk_id %s", trunk, trunk_id)
         trunk_data = trunk['trunk']
-        with neutron_db_api.context_manager.writer.using(context):
+        with db_context_writer.using(context):
             trunk_obj = self._get_trunk(context, trunk_id)
             original_trunk = copy.deepcopy(trunk_obj)
             trunk_obj.update_fields(trunk_data, reset_changes=True)
@@ -288,7 +288,7 @@ class VppTrunkPlugin(common_db_mixin.CommonDbMixin):
         """Delete the trunk port."""
         LOG.debug("Deleting trunk_id %s", trunk_id)
         deleted_from_db = False
-        with neutron_db_api.context_manager.writer.using(context):
+        with db_context_writer.using(context):
             trunk = self._get_trunk(context, trunk_id)
             rules.trunk_can_be_managed(context, trunk)
             trunk_port_validator = rules.TrunkPortValidator(trunk.port_id)
@@ -324,7 +324,7 @@ class VppTrunkPlugin(common_db_mixin.CommonDbMixin):
             # The trunk will transition to DOWN and subsequently to ACTIVE
             # when a subport is added.
             trunk.update(status=trunk_const.DOWN_STATUS)
-        with neutron_db_api.context_manager.writer.using(context):
+        with db_context_writer.using(context):
             for subport in subports:
                 subport_obj = trunk_objects.SubPort(
                     context=context,
@@ -388,7 +388,7 @@ class VppTrunkPlugin(common_db_mixin.CommonDbMixin):
             if subport['port_id'] not in current_subports:
                 raise trunk_exc.SubPortNotFound(trunk_id=trunk_id,
                                                 port_id=subport['port_id'])
-        with neutron_db_api.context_manager.writer.using(context):
+        with db_context_writer.using(context):
             for subport in subports:
                 subport_obj = current_subports.pop(subport['port_id'])
                 subport_obj.delete()

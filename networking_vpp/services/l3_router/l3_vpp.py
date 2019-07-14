@@ -20,10 +20,11 @@ from networking_vpp import constants as nvpp_const
 from oslo_config import cfg
 from oslo_log import log as logging
 
-from neutron.db import api as neutron_db_api
 from neutron.db import common_db_mixin
 from neutron.db import l3_gwmode_db
 
+from networking_vpp.compat import db_context_reader
+from networking_vpp.compat import db_context_writer
 from networking_vpp.compat import n_const as constants
 from networking_vpp.compat import n_exc
 from networking_vpp.compat import n_provider as provider
@@ -81,7 +82,7 @@ class VppL3RouterPlugin(common_db_mixin.CommonDbMixin,
         return (nvpp_const.LEADIN + '/nodes/' + l3_host + '/' +
                 nvpp_const.ROUTER_FIP_DIR + fip_id)
 
-    @neutron_db_api.context_manager.writer
+    @db_context_writer
     def _process_floatingip(self, context, fip_dict, event_type):
         if event_type == 'associate':
             port = self._core_plugin.get_port(context, fip_dict['port_id'])
@@ -118,7 +119,7 @@ class VppL3RouterPlugin(common_db_mixin.CommonDbMixin,
                              self._floatingip_path(l3_host, fip_dict['id']),
                              vpp_floatingip_dict)
 
-    @neutron_db_api.context_manager.reader
+    @db_context_reader
     def _get_vpp_router(self, context, router_id):
         try:
             router = self._get_by_id(context, Router, router_id)
@@ -127,7 +128,7 @@ class VppL3RouterPlugin(common_db_mixin.CommonDbMixin,
                                    router_id)
         return router
 
-    @neutron_db_api.context_manager.writer
+    @db_context_writer
     def _get_router_interface(self, context, router_id, router_dict):
 
         """Populate the param: "router_dict" with values and return.
@@ -183,7 +184,7 @@ class VppL3RouterPlugin(common_db_mixin.CommonDbMixin,
                 l3_host + '/' + nvpp_const.ROUTERS_DIR +
                 router_id + '/' + port_id)
 
-    @neutron_db_api.context_manager.writer
+    @db_context_writer
     def _write_interface_journal(self, context, router_id, router_dict):
         LOG.info("router-service: writing router interface journal for "
                  "router_id:%s, router_dict:%s", router_id, router_dict)
@@ -193,7 +194,7 @@ class VppL3RouterPlugin(common_db_mixin.CommonDbMixin,
             db.journal_write(context.session, router_intf_path, router_dict)
             self.communicator.kick()
 
-    @neutron_db_api.context_manager.writer
+    @db_context_writer
     def _remove_interface_journal(self, context, router_id, port_id):
         LOG.info("router-service: removing router interface journal for "
                  "router_id:%s, port_id:%s", router_id, port_id)
@@ -203,7 +204,7 @@ class VppL3RouterPlugin(common_db_mixin.CommonDbMixin,
             db.journal_write(context.session, router_intf_path, None)
             self.communicator.kick()
 
-    @neutron_db_api.context_manager.writer
+    @db_context_writer
     def _write_router_external_gw_journal(self, context, router_id,
                                           router_dict, delete=False):
         LOG.info("Writing router external gateway using router_dict: %s",
@@ -273,7 +274,7 @@ class VppL3RouterPlugin(common_db_mixin.CommonDbMixin,
     def create_router(self, context, router):
         router_dict = super(VppL3RouterPlugin, self).create_router(
             context, router)
-        with neutron_db_api.context_manager.writer.using(context):
+        with db_context_writer.using(context):
             # Allocate VRF for this router
             db.add_router_vrf(context.session, router_dict['id'])
             if router_dict.get('external_gateway_info', False):
@@ -307,7 +308,7 @@ class VppL3RouterPlugin(common_db_mixin.CommonDbMixin,
     def delete_router(self, context, router_id):
         router = self.get_router(context, router_id)
         super(VppL3RouterPlugin, self).delete_router(context, router_id)
-        with neutron_db_api.context_manager.writer.using(context):
+        with db_context_writer.using(context):
             # Delete the external gateway key from etcd
             if router.get('external_gateway_info', False):
                 self._write_router_external_gw_journal(context, router_id,
@@ -372,7 +373,7 @@ class VppL3RouterPlugin(common_db_mixin.CommonDbMixin,
             self._process_floatingip(context, fip, 'disassociate')
         return router_ids
 
-    @neutron_db_api.context_manager.reader
+    @db_context_reader
     def _get_router_port_on_subnet(self, context, router_id, router_dict):
         filters = {'device_id': [router_id]}
         router_ports = self._core_plugin.get_ports(context,
