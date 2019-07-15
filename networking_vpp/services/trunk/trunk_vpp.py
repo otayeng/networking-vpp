@@ -15,11 +15,13 @@
 #
 
 import copy
+from networking_vpp.compat import context
 from networking_vpp.compat import db_context_writer
 from networking_vpp.compat import events
 from networking_vpp.compat import n_provider as provider
 from networking_vpp.compat import portbindings
 from networking_vpp.compat import registry
+from networking_vpp.compat import resource_extend
 from networking_vpp.compat import resources
 from networking_vpp import constants as nvpp_const
 from networking_vpp.db import db
@@ -31,6 +33,7 @@ from neutron.db import db_base_plugin_common
 from neutron.objects import base as objects_base
 from neutron.objects import trunk as trunk_objects
 
+from neutron_lib.api.definitions import port as port_def
 from neutron_lib.plugins import directory
 try:
     from neutron_lib.plugins import utils as plugin_utils
@@ -57,6 +60,7 @@ def kick_communicator_on_end(func):
     return new_func
 
 
+@resource_extend.has_resource_extenders
 class VppTrunkPlugin(common_db_mixin.CommonDbMixin):
     """Implementation of the VPP Trunk Service Plugin.
 
@@ -80,6 +84,28 @@ class VppTrunkPlugin(common_db_mixin.CommonDbMixin):
                            resources.PORT, events.AFTER_UPDATE)
         registry.notify(trunk_const.TRUNK_PLUGIN, events.AFTER_INIT, self)
         LOG.debug('vpp-trunk: vpp trunk service plugin has initialized')
+
+    @staticmethod
+    @resource_extend.extends([port_def.COLLECTION_NAME])
+    def _extend_port_trunk_details(port_res, port_db):
+        """Add trunk details to a port."""
+        if port_db.trunk_port:
+            subports = {
+                x.port_id: {'segmentation_id': x.segmentation_id,
+                            'segmentation_type': x.segmentation_type,
+                            'port_id': x.port_id}
+                for x in port_db.trunk_port.sub_ports
+            }
+            core_plugin = directory.get_plugin()
+            ports = core_plugin.get_ports(
+                context.get_admin_context(), filters={'id': subports})
+            for port in ports:
+                subports[port['id']]['mac_address'] = port['mac_address']
+            trunk_details = {'trunk_id': port_db.trunk_port.id,
+                             'sub_ports': [x for x in subports.values()]}
+            port_res['trunk_details'] = trunk_details
+
+        return port_res
 
     @classmethod
     def get_plugin_type(cls):
