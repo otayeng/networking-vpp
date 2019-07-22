@@ -157,6 +157,7 @@ class VppTrunkPlugin(common_db_mixin.CommonDbMixin):
             raise trunk_exc.TrunkNotFound(trunk_id=trunk_id)
         return trunk_obj
 
+    @db_base_plugin_common.convert_result_to_dict
     def create_trunk(self, context, trunk):
         """Create a trunk object."""
         LOG.debug("Creating trunk %s", trunk)
@@ -264,6 +265,7 @@ class VppTrunkPlugin(common_db_mixin.CommonDbMixin):
                 trunk_path = self._trunk_path(host, port_id)
                 self._write_trunk_journal(context, trunk_path, trunk_data)
 
+    @db_base_plugin_common.convert_result_to_dict
     def update_trunk(self, context, trunk_id, trunk):
         """Update the trunk object."""
         LOG.debug("Updating trunk %s trunk_id %s", trunk, trunk_id)
@@ -307,6 +309,7 @@ class VppTrunkPlugin(common_db_mixin.CommonDbMixin):
                             events.AFTER_DELETE, self,
                             payload=payload)
 
+    @db_base_plugin_common.convert_result_to_dict
     def add_subports(self, context, trunk_id, subports):
         """Add one or more subports to a trunk."""
         LOG.debug("Adding subports %s to trunk %s", subports, trunk_id)
@@ -364,6 +367,7 @@ class VppTrunkPlugin(common_db_mixin.CommonDbMixin):
                                         self,
                                         **kwargs)
 
+    @db_base_plugin_common.convert_result_to_dict
     def remove_subports(self, context, trunk_id, subports):
         """Remove one or more subports from the trunk."""
         LOG.debug("Removing subports %s from trunk %s", subports, trunk_id)
