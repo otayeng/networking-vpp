@@ -20,7 +20,6 @@ import sys
 import uuid as uuidgen
 sys.modules['vpp_papi'] = mock.MagicMock()
 sys.modules['vpp'] = mock.MagicMock()
-sys.modules['threading'] = mock.MagicMock()
 from ipaddress import ip_address
 from networking_vpp.agent import gpe
 from networking_vpp.agent import server
