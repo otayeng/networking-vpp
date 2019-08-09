@@ -302,6 +302,27 @@ class VPPMechanismDriver(api.MechanismDriver):
                 # not.
                 self._insert_provisioning_block(port_context)
 
+                # If this is part of a successful live migration where the
+                # target compute's nova has invoked update_port() binding the
+                # port to the target compute and removing the 'migrating_to'
+                # key from the binding:profile attribute then this is our
+                # chance to remove etcd entries of the old port binding
+                if (port_context.original is not None and
+                    port_context.original_host is not None and
+                        port_context.original_host != port_context.host and
+                    'migrating_to' not in
+                        port_context.current['binding:profile'] and
+                    'migrating_to' in
+                        port_context.original['binding:profile'] and
+                    port_context.original['binding:profile']['migrating_to']
+                        == port_context.host):
+                        self.communicator.unbind(
+                            port_context._plugin_context.session,
+                            port_context.original,
+                            port_context.original_host,
+                            current_bind[api.BOUND_SEGMENT]
+                            )
+
     def port_bind_complete(self, port_id, host):
         """Tell things that the port is truly bound.
 
