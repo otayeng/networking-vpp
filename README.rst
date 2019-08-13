@@ -503,6 +503,18 @@ Any known issues?
 In general, check the bugs at
 <https://bugs.launchpad.net/networking-vpp> - but worth noting:
 
+-  There has been a recent change in nova (queens, rocky, stein) which
+   proactively fails live migration for instances with NUMA characteristics
+   (e.g., huge pages, CPU pinning) because nova does not yet have full support
+   for NUMA-aware migrations which would involve re-calculating those
+   characteristics on the destination compute host. It is currently a `WIP
+   <https://blueprints.launchpad.net/nova/+spec/numa-aware-live-migration>`_
+   and targeted for train. However, users who want to use live migration can
+   do so by adding ``enable_numa_live_migration=True`` under the
+   ``[workarounds]`` section in nova.conf and then restarting the nova conductor
+   service. Note that it is the user’s responsibility to ensure that the source
+   and target compute hosts have similar NUMA topologies and that there are
+   enough hugepages on the target host.
 -  SNAT setting may use the uplink interface on certain occasions besides
    the BVI interfaces.
 -  Some failure cases (VPP reset) leave the agent
