@@ -21,7 +21,10 @@ from neutron.tests import base
 from oslo_serialization import jsonutils
 
 
-node_cert = "-----BEGIN CERTIFICATE-----\n\
+# py3.x/py2.x note:
+# The cryto apis actually expect a bytes-like object for the certs and keys.
+# It worked in 2.x but we need to be explicit in 3.x
+node_cert = b"-----BEGIN CERTIFICATE-----\n\
 MIIDUTCCAjmgAwIBAgIRAPsiF3EkqGBqrrywIRicwXwwDQYJKoZIhvcNAQELBQAw\n\
 GjEYMBYGA1UEAwwPb3BlbnN0YWNrLmxvY2FsMB4XDTE3MDMwNjA4MjM1N1oXDTI3\n\
 MDMwNDA4MjM1N1owEDEOMAwGA1UEAwwFZXRjZDIwggEiMA0GCSqGSIb3DQEBAQUA\n\
@@ -42,7 +45,7 @@ Sq1SHrYvuNKrNOl1wusG/59uuX333jdOUPIuEJfcZ3AQjF9sJYFgpXlcX/ac+3ex\n\
 bGpL9V/LhazYKH9tI8GtiBTy6ADoo5tyQ6JLUqoONBH2IUt8IQ==\n\
 -----END CERTIFICATE-----"
 
-node_key = "-----BEGIN PRIVATE KEY-----\n\
+node_key = b"-----BEGIN PRIVATE KEY-----\n\
 MIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDODKLwFOB9UlWP\n\
 x6BqvtdJiEDS3LGgBbpVCPbFfP0xjcGdspJln0WuTwOt+JAzNQ5vSa1l42vkv2Gb\n\
 QfKhPLzEVX6bgfJ5bspT2AFxOLESTJyxdgzqV8EeWVGSBhmm5i2iT8lKldb+0hJA\n\
@@ -71,7 +74,7 @@ pOex+7twj6596/LnE0o27ZX0CB0b0CvJcYYDLEuidE+sTi5e5/eV/R8n+nVYQwqX\n\
 5naxaIzK+EP6lOe5U2ldPA==\n\
 -----END PRIVATE KEY-----"
 
-ca_cert = "-----BEGIN CERTIFICATE-----\n\
+ca_cert = b"-----BEGIN CERTIFICATE-----\n\
 MIIDQTCCAimgAwIBAgIJAOolbdKIMiGCMA0GCSqGSIb3DQEBCwUAMBoxGDAWBgNV\n\
 BAMMD29wZW5zdGFjay5sb2NhbDAeFw0xNzAzMDYwNTQyMjVaFw0yNzAzMDQwNTQy\n\
 MjVaMBoxGDAWBgNVBAMMD29wZW5zdGFjay5sb2NhbDCCASIwDQYJKoZIhvcNAQEB\n\
@@ -107,11 +110,17 @@ class JWTUtilsTestCase(base.BaseTestCase):
 
     def corrupt_jwt(self, sgn):
         jwt = sgn['jwt']
-        sjwt = jwt.split('.')
+        sjwt = jwt.split(b'.')
 
-        sjwt[1] = chr(ord(sjwt[1][0]) + 1) + sjwt[1][1:]
+        # py3.x/py2.x note:
+        # bytes and bytearray were introduced in 2.6 so the following will
+        # work 2.6 onwards. In any case, openstack supports 2.7 onwards only
+        # and even 2.7 is nearing eol, so the following ought to suffice.
+        tmp = bytearray(sjwt[1])
+        tmp[0] = tmp[0] + 1
+        sjwt[1] = bytes(tmp)
 
-        jwt = ".".join(sjwt)
+        jwt = b".".join(sjwt)
         sgn['jwt'] = jwt
         return sgn
 

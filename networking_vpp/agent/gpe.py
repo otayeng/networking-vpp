@@ -138,7 +138,11 @@ class GPEForwarder(object):
         """
         LOG.debug("Clearing all gpe remote mappings for VNI:%s",
                   segmentation_id)
-        for mac_vni_tpl in self.gpe_map['remote_map'].keys():
+        # py3.x/py2.x note:
+        # Enclosing self.gpe_map['remote_map'].keys() inside list() to avoid
+        # the following error in the py3.x unit tests:
+        #     RuntimeError: dictionary changed size during iteration
+        for mac_vni_tpl in list(self.gpe_map['remote_map'].keys()):
             mac, vni = mac_vni_tpl
             # We also have (IP, VNI) tuples in remote_map. So, check if mac.
             if len(mac.split(':')) == 6 and segmentation_id == vni:
