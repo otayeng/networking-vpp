@@ -406,6 +406,27 @@ The vpp-agent listens for watch events on this key.
 On the master node, the router BVI interfaces are enabled and
 they are disabled on all the backup nodes.
 
+
+How do I enable VLAN-aware VMs or VLAN Trunking or TrunkPort feature?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*VLAN-aware VMs* or *VLAN Trunking* or *TrunkPort* refers to the ability to access
+lots of neutron networks over a single vNIC as tagged/encapsulated traffic.
+
+By default, this feature is not enabled.
+
+To enable, add ``vpp-trunk`` to the list of service plugins in ``neutron.conf``
+and restart neutron-server::
+
+    service_plugins=vpp-trunk
+
+Next, the ML2 agents running on the network/compute nodes too need to be made
+aware that the feature has been enabled and this can be done by adding the
+``service_plugins`` option to the ML2 agent's config file and restarting them::
+
+    [DEFAULT]
+    service_plugins=vpp-trunk
+
+
 How does the vpp-agent talk to VPP?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
